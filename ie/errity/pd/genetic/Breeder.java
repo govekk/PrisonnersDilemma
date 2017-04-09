@@ -107,10 +107,10 @@ public class Breeder extends JPanel
 		}
 
 		else if (selection == 1) {
+			// if elitism, choose selParam highest fitness individuals to not mutate
 			if (selParam > 0) {
 				for (int i = 0; i < popSize; i++) {
 					Selected[i] = new Prisoner(curPopulation[i].getStrat());
-					//Selected[i] = (Prisoner) curPopulation[i].clone();
 				}
 			}
 			else {
@@ -124,13 +124,55 @@ public class Breeder extends JPanel
 		else {  // any other selection method fill pop with always cooperate
 			for (int i=0; i<popSize; i++)
 			Selected[i] = new Prisoner("ALLC");
-			System.out.println("In the else block");
 		}
 
-		return mutate(Selected);
+		return Variation(Selected);
 	}
 
-	public Prisoner[] mutate(Prisoner[] Selected) {
+	/**
+	 * Scales the fitness scores of a population using sigma scaling
+	 * @param curPopulation: a population of prisoners
+	 * @return the same population of prisoners with their scores scaled
+	 */
+	private Prisoner[] SigmaScaling(Prisoner[] curPopulation) {
+    	// get average fitness
+		float avgScore = 0;
+		for (int i = 0; i < popSize; i++) {
+			avgScore += curPopulation[i].getScore();
+		}
+		avgScore = avgScore / popSize;
+
+		// get std dev
+		float sumSquares = 0;
+		for (int i = 0; i < popSize; i++) {
+			sumSquares += (curPopulation[i].getScore() - avgScore) * (curPopulation[i].getScore() - avgScore);
+		}
+		float stdDev = sumSquares/popSize;
+
+		// set scores to scaled fitness
+		for (int i = 0; i < popSize; i++) {
+			int scaledFit = Math.round(curPopulation[i].getScore()/(2*stdDev));
+			curPopulation[i].setScore(scaledFit);
+		}
+		return curPopulation;
+	}
+
+	/**
+	 * Selects next generation using fitness proportional selection (roulette wheel)
+	 * @param curPopulation: the current population from which to select parents
+	 * @param toSelect: the number of prisoners to select for the next generation
+	 * @return the next generation
+	 */
+	private Prisoner[] FitPropSelect(Prisoner[] curPopulation, int toSelect){
+		return curPopulation;
+	}
+
+	/**
+	 * Performs mutation and crossover on a given population of prisoners
+	 * @param Selected: the population to be varied
+	 * @return varied population of same size
+	 */
+	private Prisoner[] Variation(Prisoner[] Selected) {
 		//Crossover & Mutate each pair of selected parents
 		BitSet Offspring[] = new BitSet[2];  // temporarily holds 2 children during crossover/mutation
 		for (int d=0; d<popSize; d+=2) {
