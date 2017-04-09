@@ -105,6 +105,19 @@ public class Breeder extends JPanel
 		Selected[i] = (Prisoner)curPopulation[selIndex].clone();
 	    }
 	}
+
+	if (selection == 1) {
+		if (selParam > 0) {
+			for (int i = 0; i < popSize; i++) {
+				Selected[i] = (Prisoner) curPopulation[i].clone();
+			}
+		}
+		else {
+			for (int i = 0; i < popSize; i++) {
+				Selected[i] = new Prisoner("ALLD");
+			}
+		}
+	}
 	
 	else {  // any other selection method fill pop with always cooperate
 	    for (int i=0; i<popSize; i++)
