@@ -125,7 +125,7 @@ public class Breeder extends JPanel
 	}
 
 			
-	//Crossover & Mutate each pair of selected parents	
+	//Crossover & Mutate each pair of selected parents
 	BitSet Offspring[] = new BitSet[2];  // temporarily holds 2 children during crossover/mutation
 	for (int d=0; d<popSize; d+=2) {
 	    // in case of odd population, just mutate and replace last individual
