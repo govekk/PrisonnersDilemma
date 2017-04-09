@@ -106,7 +106,7 @@ public class Breeder extends JPanel
 			}
 		}
 
-		if (selection == 1) {
+		else if (selection == 1) {
 			if (selParam > 0) {
 				for (int i = 0; i < popSize; i++) {
 					Selected[i] = new Prisoner(curPopulation[i].getStrat());
@@ -124,43 +124,10 @@ public class Breeder extends JPanel
 		else {  // any other selection method fill pop with always cooperate
 			for (int i=0; i<popSize; i++)
 			Selected[i] = new Prisoner("ALLC");
+			System.out.println("In the else block");
 		}
 
 		return mutate(Selected);
-
-
-		/*//Crossover & Mutate each pair of selected parents
-		BitSet Offspring[] = new BitSet[2];  // temporarily holds 2 children during crossover/mutation
-		for (int d=0; d<popSize; d+=2) {
-			// in case of odd population, just mutate and replace last individual
-			if (d+1 >= popSize) {
-			Offspring[0] = Genetic.mutate(Selected[d].getStrat(), mutateP, rand);
-			Selected[d] = new Prisoner(Offspring[0]);
-			}
-			else {
-
-			if(rand.nextDouble() <= crossP) //Cross Over
-				Offspring = Genetic.crossover(Selected[d].getStrat(),Selected[d+1].getStrat(), rand);
-			else //clones
-				{
-				Offspring[0] = (BitSet)Selected[d].getStrat().clone();
-				Offspring[1] = (BitSet)Selected[d+1].getStrat().clone();
-				}
-
-			//Mutation
-			Offspring[0] = Genetic.mutate(Offspring[0],mutateP, rand);
-			Offspring[1] = Genetic.mutate(Offspring[1],mutateP, rand);
-
-			//Replacement - we are done with parents d & d+1, so just replace with children without
-			// creating an entire new array
-			Selected[d] = new Prisoner(Offspring[0]);
-			Selected[d+1] = new Prisoner(Offspring[1]);
-			}
-		}
-		// pass on children pop to be parents of next gen
-		curPopulation = Selected;
-		repaint();	//update display (if any)
-		return curPopulation; //return the bred population */
 	}
 
 	public Prisoner[] mutate(Prisoner[] Selected) {
