@@ -1,9 +1,10 @@
 package ie.errity.pd.genetic;
 
-import ie.errity.pd.*;
+import ie.errity.pd.Prisoner;
+import ie.errity.pd.Rules;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.BitSet;
 import java.util.Random;
 
@@ -62,102 +63,99 @@ public class Breeder extends JPanel
      *@param c	initial population (raw fitness of population must be calcualted previously)
      *@return the next generation
      */
-    public Prisoner[] Breed(Prisoner[] c)
-    {
-	curPopulation = c;	//population to breed
-	popSize = curPopulation.length;
-	Prisoner Selected[] = new Prisoner[popSize]; // parent pop after selection 
-	
-		
-	// Select parents for next gen 
-	// ***ADD CODE (make separate functions) to perform each of the types of selection***
-	// selection is an int that determines the method to use
-	// selParam is an int that can be used as a parameter for a selection method if required
-	
-	// One silly selection method which uses rand and the selParam is given below
-	// Be sure to use "rand" class variable here as your random number generator (i.e. don't create a new one!)
+    public Prisoner[] Breed(Prisoner[] c) {
+		curPopulation = c;	//population to breed
+		popSize = curPopulation.length;
+		Prisoner Selected[] = new Prisoner[popSize]; // parent pop after selection
 
-	// selection method 0, use parameter as a threshhold percentage.  If a random number is less than param, 
-	// select the best individual from the population.  Otherwise select a random individual.
-	// In this method a param of 0 gives random selection, and a param of 100 gives best-wins-all selection.
-	if (selection == 0) {
-	    // find index of most fit individual
-	    double maxFit = 0;
-	    int indexBest = 0;
-	    for (int i=0; i<popSize; i++) {
-		if (curPopulation[i].getScore() > maxFit) {
-		    maxFit = curPopulation[i].getScore();
-		    indexBest = i;
-		}
-	    }
 
-	    // select according to description above for this method
-	    for (int i=0; i<popSize; i++) {
-		int selIndex = 0;
-		if (rand.nextInt(100) < selParam)  // rand less than param, select best individual
-		    {
-		    selIndex = indexBest;
-		    }
-		else  // otherwise select random individual
-		    {
-			selIndex = rand.nextInt(popSize);
-		    }
-		Selected[i] = (Prisoner)curPopulation[selIndex].clone();
-	    }
-	}
+		// Select parents for next gen
+		// ***ADD CODE (make separate functions) to perform each of the types of selection***
+		// selection is an int that determines the method to use
+		// selParam is an int that can be used as a parameter for a selection method if required
 
-	if (selection == 1) {
-		if (selParam > 0) {
-			for (int i = 0; i < popSize; i++) {
-				Selected[i] = (Prisoner) curPopulation[i].clone();
+		// One silly selection method which uses rand and the selParam is given below
+		// Be sure to use "rand" class variable here as your random number generator (i.e. don't create a new one!)
+
+		// selection method 0, use parameter as a threshhold percentage.  If a random number is less than param,
+		// select the best individual from the population.  Otherwise select a random individual.
+		// In this method a param of 0 gives random selection, and a param of 100 gives best-wins-all selection.
+		if (selection == 0) {
+			// find index of most fit individual
+			double maxFit = 0;
+			int indexBest = 0;
+			for (int i=0; i<popSize; i++) {
+			if (curPopulation[i].getScore() > maxFit) {
+				maxFit = curPopulation[i].getScore();
+				indexBest = i;
+			}
+			}
+
+			// select according to description above for this method
+			for (int i=0; i<popSize; i++) {
+			int selIndex = 0;
+			if (rand.nextInt(100) < selParam)  // rand less than param, select best individual
+				{
+				selIndex = indexBest;
+				}
+			else  // otherwise select random individual
+				{
+				selIndex = rand.nextInt(popSize);
+				}
+			Selected[i] = (Prisoner)curPopulation[selIndex].clone();
 			}
 		}
-		else {
-			for (int i = 0; i < popSize; i++) {
-				Selected[i] = new Prisoner("ALLD");
+
+		if (selection == 1) {
+			if (selParam > 0) {
+				for (int i = 0; i < popSize; i++) {
+					Selected[i] = (Prisoner) curPopulation[i].clone();
+				}
+			}
+			else {
+				for (int i = 0; i < popSize; i++) {
+					Selected[i] = new Prisoner("ALLD");
+				}
 			}
 		}
-	}
-	
-	else {  // any other selection method fill pop with always cooperate
-	    for (int i=0; i<popSize; i++)
-		Selected[i] = new Prisoner("ALLC");
-	}
+		else {  // any other selection method fill pop with always cooperate
+			for (int i=0; i<popSize; i++)
+			Selected[i] = new Prisoner("ALLC");
+		}
+			
+		//Crossover & Mutate each pair of selected parents
+		BitSet Offspring[] = new BitSet[2];  // temporarily holds 2 children during crossover/mutation
+		for (int d=0; d<popSize; d+=2) {
+			// in case of odd population, just mutate and replace last individual
+			if (d+1 >= popSize) {
+			Offspring[0] = Genetic.mutate(Selected[d].getStrat(), mutateP, rand);
+			Selected[d] = new Prisoner(Offspring[0]);
+			}
+			else {
 
-			
-	//Crossover & Mutate each pair of selected parents	
-	BitSet Offspring[] = new BitSet[2];  // temporarily holds 2 children during crossover/mutation
-	for (int d=0; d<popSize; d+=2) {
-	    // in case of odd population, just mutate and replace last individual
-	    if (d+1 >= popSize) {
-		Offspring[0] = Genetic.mutate(Selected[d].getStrat(), mutateP, rand);
-		Selected[d] = new Prisoner(Offspring[0]);
-	    }
-	    else {
-							
-		if(rand.nextDouble() <= crossP) //Cross Over
-		    Offspring = Genetic.crossover(Selected[d].getStrat(),Selected[d+1].getStrat(), rand);
-		else //clones
-		    {
-			Offspring[0] = (BitSet)Selected[d].getStrat().clone();
-			Offspring[1] = (BitSet)Selected[d+1].getStrat().clone();
-		    }
-			
-		//Mutation
-		Offspring[0] = Genetic.mutate(Offspring[0],mutateP, rand);
-		Offspring[1] = Genetic.mutate(Offspring[1],mutateP, rand);
-			
-		//Replacement - we are done with parents d & d+1, so just replace with children without
-		// creating an entire new array
-		Selected[d] = new Prisoner(Offspring[0]);
-		Selected[d+1] = new Prisoner(Offspring[1]);
-	    }
+			if(rand.nextDouble() <= crossP) //Cross Over
+				Offspring = Genetic.crossover(Selected[d].getStrat(),Selected[d+1].getStrat(), rand);
+			else //clones
+				{
+				Offspring[0] = (BitSet)Selected[d].getStrat().clone();
+				Offspring[1] = (BitSet)Selected[d+1].getStrat().clone();
+				}
+
+			//Mutation
+			Offspring[0] = Genetic.mutate(Offspring[0],mutateP, rand);
+			Offspring[1] = Genetic.mutate(Offspring[1],mutateP, rand);
+
+			//Replacement - we are done with parents d & d+1, so just replace with children without
+			// creating an entire new array
+			Selected[d] = new Prisoner(Offspring[0]);
+			Selected[d+1] = new Prisoner(Offspring[1]);
+			}
+		}
+		// pass on children pop to be parents of next gen
+		curPopulation = Selected;
+		repaint();	//update display (if any)
+		return curPopulation; //return the bred population
 	}
-	// pass on children pop to be parents of next gen
-	curPopulation = Selected;
-	repaint();	//update display (if any)
-	return curPopulation; //return the bred population
-    }
 	
 	
     /**
