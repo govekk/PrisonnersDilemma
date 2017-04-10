@@ -66,6 +66,7 @@ public class Breeder extends JPanel
     public Prisoner[] Breed(Prisoner[] c) {
 		curPopulation = c;	//population to breed
 		popSize = curPopulation.length;
+
 		Prisoner Selected[] = new Prisoner[popSize]; // parent pop after selection
 
 
@@ -77,7 +78,7 @@ public class Breeder extends JPanel
 		// One silly selection method which uses rand and the selParam is given below
 		// Be sure to use "rand" class variable here as your random number generator (i.e. don't create a new one!)
 
-		// selection method 0, use parameter as a threshhold percentage.  If a random number is less than param,
+		// selection method 0, use parameter as a threshold percentage.  If a random number is less than param,
 		// select the best individual from the population.  Otherwise select a random individual.
 		// In this method a param of 0 gives random selection, and a param of 100 gives best-wins-all selection.
 		if (selection == 0) {
@@ -85,10 +86,10 @@ public class Breeder extends JPanel
 			double maxFit = 0;
 			int indexBest = 0;
 			for (int i=0; i<popSize; i++) {
-			if (curPopulation[i].getScore() > maxFit) {
-				maxFit = curPopulation[i].getScore();
-				indexBest = i;
-			}
+				if (curPopulation[i].getScore() > maxFit) {
+					maxFit = curPopulation[i].getScore();
+					indexBest = i;
+				}
 			}
 
 			// select according to description above for this method
@@ -104,13 +105,16 @@ public class Breeder extends JPanel
 				}
 			Selected[i] = (Prisoner)curPopulation[selIndex].clone();
 			}
-		}
-
-		else if (selection == 1) {
+		} else if (selection == 1) {
 			// if elitism, choose selParam highest fitness individuals to not mutate
+			Prisoner[] sortedPrisoners = sortPrisoners(curPopulation);
 			if (selParam > 0) {
-				for (int i = 0; i < popSize; i++) {
-					Selected[i] = new Prisoner(curPopulation[i].getStrat());
+				for (int i = 0; i < selParam; i++) {
+					Selected[i] = new Prisoner(sortedPrisoners[i].getStrat());
+				}
+				for (int i = selParam; i < popSize; i++) {
+					// Currently sets all non-elites to "ALLD"
+					Selected[i] = new Prisoner("ALLD");
 				}
 			}
 			else {
@@ -120,8 +124,7 @@ public class Breeder extends JPanel
 			}
 			repaint();
 			return Selected;
-		}
-		else {  // any other selection method fill pop with always cooperate
+		} else {  // any other selection method fill pop with always cooperate
 			for (int i=0; i<popSize; i++)
 			Selected[i] = new Prisoner("ALLC");
 		}
@@ -233,17 +236,58 @@ public class Breeder extends JPanel
      *Set the {@link  ie.errity.pd.Rules Rules}
      *@param r new {@link  ie.errity.pd.Rules Rules}
      */
-    public void setRules(Rules r)
-    {
-	mutateP = r.getMutateP();
-	crossP = r.getCrossP();
-	selection = r.getSelection();
-	selParam = r.getSelectionParameter();
-	seed = r.getSeed();
-	if (seed > -1)
-	    rand.setSeed(seed);
+    public void setRules(Rules r) {
+        mutateP = r.getMutateP();
+        crossP = r.getCrossP();
+        selection = r.getSelection();
+        selParam = r.getSelectionParameter();
+        seed = r.getSeed();
+        if (seed > -1)
+            rand.setSeed(seed);
     }
-	
+
+    /**
+     * Sorts an array of prisoners by fitness using mergesort
+     * @param prisoners (an array of prisoners)
+     * @return array of prisoners sorted in descending order of fitness
+     */
+    private Prisoner[] sortPrisoners(Prisoner[] prisoners){
+        int numPrisoners = prisoners.length;
+        if (numPrisoners <= 1) return prisoners;
+        else {
+            int leftSize;
+            int rightSize = numPrisoners/2;
+            if (numPrisoners % 2 == 1) {
+                leftSize = rightSize + 1;
+            } else {
+                leftSize = rightSize;
+            }
+            Prisoner[] leftPrisoners = new Prisoner[leftSize];
+            Prisoner[] rightPrisoners = new Prisoner[rightSize];
+            for (int i = 0; i < leftSize; i++) {
+                leftPrisoners[i] = prisoners[i];
+            }
+            for (int i = 0; i < rightSize; i++) {
+                rightPrisoners[i] = prisoners[i+leftSize];
+            }
+            leftPrisoners = sortPrisoners(leftPrisoners);
+            rightPrisoners = sortPrisoners(rightPrisoners);
+            int j = 0;
+            Prisoner[] sortedPrisoners = new Prisoner[popSize];
+            for (int i = 0; i < leftSize; i++) {
+                while ((j < rightSize) && leftPrisoners[i].getScore() < rightPrisoners[j].getScore()) {
+                    sortedPrisoners[i+j] = rightPrisoners[j];
+                    j++;
+                }
+                sortedPrisoners[i+j] = leftPrisoners[i];
+            }
+            for (int k = j; k < rightSize; k++) {
+            	sortedPrisoners[leftSize + k] = rightPrisoners[k];
+			}
+            return sortedPrisoners;
+        }
+    }
+
     /**
      *Reset the breeder
      */
