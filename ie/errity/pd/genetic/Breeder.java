@@ -79,7 +79,7 @@ public class Breeder extends JPanel
 		// Be sure to use "rand" class variable here as your random number generator (i.e. don't create a new one!)
 
 		// selection method 0, use parameter as a threshold percentage.  If a random number is less than param,
-		// select the best individual from the population.  Otherwise select a random individual.
+		// select the best individual from the population.  Otherwise select a random individual..
 		// In this method a param of 0 gives random selection, and a param of 100 gives best-wins-all selection.
 		if (selection == 0) {
 			// find index of most fit individual
