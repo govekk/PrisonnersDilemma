@@ -122,52 +122,81 @@ public class Breeder extends JPanel
 					Selected[i] = new Prisoner("ALLD");
 				}
 			}
-			repaint();
+			curPopulation = Selected;
+			repaint(); // update display (if any)
 			return Selected;
 		} else {  // any other selection method fill pop with always cooperate
 			for (int i=0; i<popSize; i++)
 			Selected[i] = new Prisoner("ALLC");
 		}
 
-		return Variation(Selected);
+		// pass on children pop to be parents of next gen
+		Selected = SigmaScaling(Selected);
+		FitPropSelect(Selected, 2);
+		curPopulation = Variation(Selected);
+		repaint(); // update display (if any)
+		return curPopulation;
 	}
 
 	/**
 	 * Scales the fitness scores of a population using sigma scaling
-	 * @param curPopulation: a population of prisoners
+	 * @param population: a population of prisoners
 	 * @return the same population of prisoners with their scores scaled
 	 */
-	private Prisoner[] SigmaScaling(Prisoner[] curPopulation) {
+	private Prisoner[] SigmaScaling(Prisoner[] population) {
     	// get average fitness
 		float avgScore = 0;
-		for (int i = 0; i < popSize; i++) {
-			avgScore += curPopulation[i].getScore();
+		for (int i = 0; i < population.length; i++) {
+			avgScore += population[i].getScore();
 		}
-		avgScore = avgScore / popSize;
+		avgScore = avgScore / population.length;
 
 		// get std dev
 		float sumSquares = 0;
-		for (int i = 0; i < popSize; i++) {
-			sumSquares += (curPopulation[i].getScore() - avgScore) * (curPopulation[i].getScore() - avgScore);
+		for (int i = 0; i < population.length; i++) {
+			sumSquares += (population[i].getScore() - avgScore) * (population[i].getScore() - avgScore);
 		}
-		float stdDev = sumSquares/popSize;
+		float stdDev = sumSquares/population.length;
 
 		// set scores to scaled fitness
-		for (int i = 0; i < popSize; i++) {
-			int scaledFit = Math.round(curPopulation[i].getScore()/(2*stdDev));
-			curPopulation[i].setScore(scaledFit);
+		for (int i = 0; i < population.length; i++) {
+			int scaledFit = Math.round(population[i].getScore()/(2*stdDev));
+			population[i].setScore(scaledFit);
 		}
-		return curPopulation;
+		return population;
 	}
 
 	/**
 	 * Selects next generation using fitness proportional selection (roulette wheel)
-	 * @param curPopulation: the current population from which to select parents
+	 * @param population: the current population from which to select parents
 	 * @param toSelect: the number of prisoners to select for the next generation
 	 * @return the next generation
 	 */
-	private Prisoner[] FitPropSelect(Prisoner[] curPopulation, int toSelect){
-		return curPopulation;
+	private Prisoner[] FitPropSelect(Prisoner[] population, int toSelect) {
+		int totalFit = 0;
+		for (int i = 0; i < population.length; i++) {
+			totalFit += population[i].getScore();
+		}
+		float markDis = totalFit / toSelect;
+		float start = rand.nextFloat()*markDis;
+		float marks[] = new float[toSelect];
+		marks[0] = start;
+		for (int i = 1; i < toSelect; i++) {
+			marks[i] = marks[i-1] + markDis;
+		}
+		Prisoner nextGen[] = new Prisoner[toSelect];
+		int j = 0;
+		int runningTotal = 0;
+		for (int i = 0; i < population.length; i ++) {
+			runningTotal += population[i].getScore();
+			if (j < toSelect) {
+				if (runningTotal >= marks[j]) {
+					nextGen[j] = population[i];
+					j++;
+				}
+			}
+		}
+		return nextGen;
 	}
 
 	/**
@@ -178,9 +207,9 @@ public class Breeder extends JPanel
 	private Prisoner[] Variation(Prisoner[] Selected) {
 		//Crossover & Mutate each pair of selected parents
 		BitSet Offspring[] = new BitSet[2];  // temporarily holds 2 children during crossover/mutation
-		for (int d=0; d<popSize; d+=2) {
+		for (int d=0; d<Selected.length; d+=2) {
 			// in case of odd population, just mutate and replace last individual
-			if (d+1 >= popSize) {
+			if (d+1 >= Selected.length) {
 				Offspring[0] = Genetic.mutate(Selected[d].getStrat(), mutateP, rand);
 				Selected[d] = new Prisoner(Offspring[0]);
 			}
@@ -204,10 +233,8 @@ public class Breeder extends JPanel
 				Selected[d+1] = new Prisoner(Offspring[1]);
 			}
 		}
-		// pass on children pop to be parents of next gen
-		curPopulation = Selected;
-		repaint();	//update display (if any)
-		return curPopulation; //return the bred population
+
+		return Selected; //return the bred population
 	}
 
     /**
