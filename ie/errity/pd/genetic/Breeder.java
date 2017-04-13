@@ -123,6 +123,12 @@ public class Breeder extends JPanel
 		}
 	}
 
+	/**
+	 * Creates next generation using fitness proportional selection-
+	 * elitism, sigma scaling, and stochastic universal sampling
+	 *
+	 * @return the next generation
+	 */
 	private Prisoner[] FitPropSelect() {
     	if (selParam > popSize) {
     		selParam = popSize;
@@ -188,7 +194,7 @@ public class Breeder extends JPanel
 	}
 
 	/**
-	 * Selects next generation using fitness proportional selection (roulette wheel)
+	 * Selects next generation using stochastic universal sampling
 	 * @param population: the current population from which to select parents
 	 * @param toSelect: the number of prisoners to select for the next generation
 	 * @return the next generation
