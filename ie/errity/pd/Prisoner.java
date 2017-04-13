@@ -18,7 +18,7 @@ public class Prisoner implements Cloneable
     // 1st 7 reserved for 1st 3 rounds, final 64 for all combinations of actions on previous 3 rounds
     final private BitSet Strategy;  
 	
-    private int Score; 	//total payoffs recieved
+    private int Score; 	//total payoffs received
     private Moves m;	//table used to decode strategy
 	
     /**

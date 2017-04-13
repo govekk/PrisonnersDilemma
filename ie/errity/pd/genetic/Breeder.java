@@ -5,8 +5,7 @@ import ie.errity.pd.Rules;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.BitSet;
-import java.util.Random;
+import java.util.*;
 
 
 /**
@@ -128,7 +127,6 @@ public class Breeder extends JPanel
 		}
 
 		// pass on children pop to be parents of next gen
-		Selected = SigmaScaling(Selected);
 		FitPropSelect(Selected, 2);
 		curPopulation = Variation(Selected);
 		repaint(); // update display (if any)
@@ -140,27 +138,33 @@ public class Breeder extends JPanel
 	 * @param population: a population of prisoners
 	 * @return the same population of prisoners with their scores scaled
 	 */
-	private Prisoner[] SigmaScaling(Prisoner[] population) {
+	private Map<Prisoner, Double> SigmaScaling(Prisoner[] population) {
+		Map<Prisoner, Double> output = new HashMap<Prisoner, Double>();
     	// get average fitness
-		float avgScore = 0;
+		double avgScore = 0;
 		for (int i = 0; i < population.length; i++) {
 			avgScore += population[i].getScore();
 		}
 		avgScore = avgScore / population.length;
 
 		// get std dev
-		float sumSquares = 0;
+		double sumSquares = 0;
 		for (int i = 0; i < population.length; i++) {
 			sumSquares += (population[i].getScore() - avgScore) * (population[i].getScore() - avgScore);
 		}
-		float stdDev = sumSquares/population.length;
+
+		double stdDev = Math.sqrt(sumSquares/population.length);
+		if (stdDev == 0) {
+			stdDev = 0.000001;
+		}
+
 
 		// set scores to scaled fitness
 		for (int i = 0; i < population.length; i++) {
-			int scaledFit = Math.round(population[i].getScore()/(2*stdDev));
-			population[i].setScore(scaledFit);
+			Double scaledFit = new Double(1 + (population[i].getScore() - avgScore)/(2*stdDev));
+			output.put(population[i], scaledFit);
 		}
-		return population;
+		return output;
 	}
 
 	/**
@@ -170,22 +174,24 @@ public class Breeder extends JPanel
 	 * @return the next generation
 	 */
 	private Prisoner[] FitPropSelect(Prisoner[] population, int toSelect) {
-		int totalFit = 0;
+		Map<Prisoner, Double> scaled_fitness = this.SigmaScaling(population);
+
+		double totalFit = 0;
 		for (int i = 0; i < population.length; i++) {
-			totalFit += population[i].getScore();
+			totalFit += scaled_fitness.get(population[i]);
 		}
-		float markDis = totalFit / toSelect;
-		float start = rand.nextFloat()*markDis;
-		float marks[] = new float[toSelect];
+		double markDis = totalFit / toSelect;
+		double start = rand.nextFloat()*markDis;
+		double marks[] = new double[toSelect];
 		marks[0] = start;
 		for (int i = 1; i < toSelect; i++) {
 			marks[i] = marks[i-1] + markDis;
 		}
 		Prisoner nextGen[] = new Prisoner[toSelect];
 		int j = 0;
-		int runningTotal = 0;
+		double runningTotal = 0;
 		for (int i = 0; i < population.length; i ++) {
-			runningTotal += population[i].getScore();
+			runningTotal += scaled_fitness.get(population[i]);
 			if (j < toSelect) {
 				if (runningTotal >= marks[j]) {
 					nextGen[j] = population[i];
