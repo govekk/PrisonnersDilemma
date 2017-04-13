@@ -1,5 +1,5 @@
 #Evolutionary Prisoner's Dilemma Properties
-#Thu Apr 13 16:14:10 CDT 2017
+#Sun Apr 09 21:15:09 CDT 2017
 gen=250
 Name9=Empty
 eval=0
