@@ -62,7 +62,7 @@ public class Breeder extends JPanel
      *@param c	initial population (raw fitness of population must be calcualted previously)
      *@return the next generation
      */
-    public Prisoner[] Breed(Prisoner[] c) {
+    public Prisoner[] Breed(Prisoner[] c){
 		curPopulation = c;	//population to breed
 		popSize = curPopulation.length;
 
@@ -104,36 +104,51 @@ public class Breeder extends JPanel
 				}
 			Selected[i] = (Prisoner)curPopulation[selIndex].clone();
 			}
+			// pass on children pop to be parents of next gen
+			curPopulation = Variation(Selected);
+			repaint(); // update display (if any)
+			return curPopulation;
+
 		} else if (selection == 1) {
-			// if elitism, choose selParam highest fitness individuals to not mutate
-			Prisoner[] sortedPrisoners = sortPrisoners(curPopulation);
-			if (selParam > 0) {
-				for (int i = 0; i < selParam; i++) {
-					Selected[i] = new Prisoner(sortedPrisoners[i].getStrat());
-				}
-				for (int i = selParam; i < popSize; i++) {
-					// Currently sets all non-elites to "ALLD"
-					Selected[i] = new Prisoner("ALLD");
-				}
-			}
-			else {
-				for (int i = 0; i < popSize; i++) {
-					Selected[i] = new Prisoner("ALLD");
-				}
-			}
+			Selected = FitPropSelect();
 			curPopulation = Selected;
 			repaint(); // update display (if any)
-			return Selected;
+			return curPopulation;
 		} else {  // any other selection method fill pop with always cooperate
 			for (int i=0; i<popSize; i++)
 			Selected[i] = new Prisoner("ALLC");
+			curPopulation = Variation(Selected);
+			repaint(); // update display (if any)
+			return curPopulation;
+		}
+	}
+
+	private Prisoner[] FitPropSelect() {
+    	if (selParam > popSize) {
+    		selParam = popSize;
+		}
+		// if elitism, choose selParam highest fitness individuals to not mutate
+		Prisoner[] sortedPrisoners = sortPrisoners(curPopulation);
+		Prisoner[] elites = new Prisoner[selParam];
+		Prisoner[] nonElites = new Prisoner[popSize - selParam];
+		for (int i = 0; i < selParam; i++) {
+			elites[i] = new Prisoner(sortedPrisoners[i].getStrat());
+		}
+		if (selParam < popSize) {
+			nonElites = StochUniverseSample(curPopulation, popSize - selParam);
+			nonElites = Variation(nonElites);
 		}
 
-		// pass on children pop to be parents of next gen
-		FitPropSelect(Selected, 2);
-		curPopulation = Variation(Selected);
-		repaint(); // update display (if any)
-		return curPopulation;
+		// combine elites and nonElites
+		Prisoner[] Selected = new Prisoner[popSize];
+		for (int i = 0; i < selParam; i++) {
+			Selected[i] = elites[i];
+		}
+		for (int i = selParam; i < popSize; i++) {
+			Selected[i] = nonElites[i-selParam];
+		}
+
+		return Selected;
 	}
 
 	/**
@@ -161,10 +176,12 @@ public class Breeder extends JPanel
 			stdDev = 0.000001;
 		}
 
-
 		// set scores to scaled fitness
 		for (int i = 0; i < population.length; i++) {
 			Double scaledFit = new Double(1 + (population[i].getScore() - avgScore)/(2*stdDev));
+			if (scaledFit <= 0) {
+				scaledFit = 0.000001;
+			}
 			output.put(population[i], scaledFit);
 		}
 		return output;
@@ -176,8 +193,8 @@ public class Breeder extends JPanel
 	 * @param toSelect: the number of prisoners to select for the next generation
 	 * @return the next generation
 	 */
-	private Prisoner[] FitPropSelect(Prisoner[] population, int toSelect) {
-		Map<Prisoner, Double> scaled_fitness = this.SigmaScaling(population);
+	private Prisoner[] StochUniverseSample(Prisoner[] population, int toSelect) {
+		Map<Prisoner, Double> scaled_fitness = SigmaScaling(population);
 
 		double totalFit = 0;
 		for (int i = 0; i < population.length; i++) {
@@ -195,11 +212,9 @@ public class Breeder extends JPanel
 		double runningTotal = 0;
 		for (int i = 0; i < population.length; i ++) {
 			runningTotal += scaled_fitness.get(population[i]);
-			if (j < toSelect) {
-				if (runningTotal >= marks[j]) {
-					nextGen[j] = population[i];
-					j++;
-				}
+			while (j < toSelect && runningTotal >= marks[j]){
+				nextGen[j] = new Prisoner(population[i].getStrat());
+				j++;
 			}
 		}
 		return nextGen;
