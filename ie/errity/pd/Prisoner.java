@@ -9,6 +9,7 @@ import java.awt.Color;
  *Prisoner's Dilemma {@link  ie.errity.pd.Game Game}.
  *@author	Andrew Errity 99086921
  * @author      Sherri Goings (modified 4/4/2017)
+ *  @author     Kiya Govek and Adante Ratzlaff (modified 4/13/2017)
  */
 public class Prisoner implements Cloneable
 {

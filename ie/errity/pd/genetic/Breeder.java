@@ -14,6 +14,7 @@ import java.util.*;
  *via a genetic algorithm
  * @author	Andrew Errity 99086921
  * @author      Sherri Goings (modified 4/4/2017)
+ * @author      Kiya Govek and Adante Ratzlaff (modified 4/13/2017)
  */
 public class Breeder extends JPanel
 {
@@ -168,7 +169,7 @@ public class Breeder extends JPanel
 	 * @return the same population of prisoners with their scores scaled
 	 */
 	private Map<Prisoner, Double> SigmaScaling(Prisoner[] population) {
-		Map<Prisoner, Double> output = new HashMap<Prisoner, Double>();
+		Map<Prisoner, Double> output = new HashMap<>();
 		// get average fitness
 		double avgScore = 0;
 		for (int i = 0; i < population.length; i++) {
