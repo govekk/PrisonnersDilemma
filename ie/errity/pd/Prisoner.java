@@ -275,30 +275,37 @@ public class Prisoner implements Cloneable
      *@param num_players the number of Prisoners to create
      *@return an array of Prisoners with random strategies
      */
-    public static Prisoner[] getRand(int num_players, int seed)
-    {
-	BitSet ra;
-	Random rand;
-	if (seed==-1)
-	    rand = new Random();
-	else
-	    rand = new Random(seed);
-	Prisoner Players [] = new Prisoner[num_players];
-	//build random players
-	for(int j = 0; j < num_players; j++)
-	    {
-		ra = new BitSet(71);
-		for(int i = 0; i < 71;i++) //set strategy
-		    {
-			if(rand.nextBoolean())
-			    ra.set(i);
-			else
-			    ra.clear(i);
-		    }
-		Players[j] = new Prisoner(ra);
-			
-	    }
-	return Players;
+    public static Prisoner[] getRand(int num_players, int seed) {
+        /* Code to hijack this function to create a population of all defectors:
+
+
+        Prisoner Players [] = new Prisoner[num_players];
+        for (int i = 0; i < num_players; i++) {
+            Players[i] = new Prisoner("ALLD");
+        }
+        */
+        BitSet ra;
+        Random rand;
+        if (seed==-1)
+            rand = new Random();
+        else
+            rand = new Random(seed);
+        Prisoner Players [] = new Prisoner[num_players];
+        //build random players
+        for(int j = 0; j < num_players; j++)
+            {
+            ra = new BitSet(71);
+            for(int i = 0; i < 71;i++) //set strategy
+                {
+                if(rand.nextBoolean())
+                    ra.set(i);
+                else
+                    ra.clear(i);
+                }
+            Players[j] = new Prisoner(ra);
+
+            }
+        return Players;
     }
 	
     /**
