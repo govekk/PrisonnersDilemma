@@ -218,14 +218,14 @@ public class Breeder extends JPanel
 
 		double stdDev = Math.sqrt(sumSquares/population.length);
 		if (stdDev == 0) {
-			stdDev = 0.000001;
+			stdDev = 0.00000001;
 		}
 
 		// set scores to scaled fitness
 		for (int i = 0; i < population.length; i++) {
 			Double scaledFit = new Double(1 + (population[i].getScore() - avgScore)/(2*stdDev));
 			if (scaledFit <= 0) {
-				scaledFit = 0.000001;
+				scaledFit = 0.00000001;
 			}
 			output.put(population[i], scaledFit);
 		}
@@ -257,7 +257,7 @@ public class Breeder extends JPanel
 		double runningTotal = 0;
 		for (int i = 0; i < population.length; i ++) {
 			runningTotal += scaled_fitness.get(population[i]);
-			while (j < toSelect && runningTotal >= marks[j]){
+			while (j < toSelect && runningTotal > marks[j]){
 				nextGen[j] = new Prisoner(population[i].getStrat());
 				j++;
 			}
