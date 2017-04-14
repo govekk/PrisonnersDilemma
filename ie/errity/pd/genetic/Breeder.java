@@ -162,48 +162,6 @@ public class Breeder extends JPanel
 		return Selected;
 	}
 
-	private Prisoner[] TournamentSelect() {
-        if (selParam < 1) {
-            selParam = 1;
-        } else if (selParam > popSize) {
-            selParam = popSize;
-        }
-        Prisoner[] tourney = new Prisoner[selParam];
-        Prisoner[] Selected = new Prisoner[popSize];
-        for (int i = 0; i < popSize; i++) { // run N tournaments
-            int prisonersNeeded = selParam;
-            for (int j = 0; j < popSize; j++) { // iterate over curPopulation to stock the tourney
-                float choice = rand.nextFloat();
-                float probability = (float) prisonersNeeded/(popSize-j);
-                if (choice <= probability && choice != 0) {
-                    tourney[selParam - prisonersNeeded] = curPopulation[j];
-                    prisonersNeeded--;
-                }
-            }
-            Prisoner victor = tourney[0];
-            ArrayList<Prisoner> ties = new ArrayList<>(1);
-            ties.add(victor);
-            for (int j = 1; j < selParam; j++) {
-                if (tourney[j].getScore() > victor.getScore()) {
-                    victor = tourney[j];
-                    ties = new ArrayList<>(1);
-                    ties.add(victor);
-                } else if (tourney[j].getScore() == victor.getScore()) {
-                    ties.add(tourney[j]);
-                }
-            }
-            if(ties.size() > 1) {
-                int numTies = ties.size();
-                int winningIndex = rand.nextInt(numTies);
-                victor = ties.get(winningIndex);
-            }
-            Selected[i] = new Prisoner(victor.getStrat());
-        }
-        Selected = Variation(Selected);
-        repaint();
-        return Selected;
-    }
-
 	/**
 	 * Scales the fitness scores of a population using sigma scaling
 	 * @param population: a population of prisoners
@@ -211,7 +169,7 @@ public class Breeder extends JPanel
 	 */
 	private Map<Prisoner, Double> SigmaScaling(Prisoner[] population) {
 		Map<Prisoner, Double> output = new HashMap<Prisoner, Double>();
-    	// get average fitness
+		// get average fitness
 		double avgScore = 0;
 		for (int i = 0; i < population.length; i++) {
 			avgScore += population[i].getScore();
@@ -272,6 +230,52 @@ public class Breeder extends JPanel
 		}
 		return nextGen;
 	}
+
+	/**
+	 * Creates next population using tournament selection
+	 *
+	 * @return the next population
+	 */
+	private Prisoner[] TournamentSelect() {
+        if (selParam < 1) {
+            selParam = 1;
+        } else if (selParam > popSize) {
+            selParam = popSize;
+        }
+        Prisoner[] tourney = new Prisoner[selParam];
+        Prisoner[] Selected = new Prisoner[popSize];
+        for (int i = 0; i < popSize; i++) { // run N tournaments
+            int prisonersNeeded = selParam;
+            for (int j = 0; j < popSize; j++) { // iterate over curPopulation to stock the tourney
+                float choice = rand.nextFloat();
+                float probability = (float) prisonersNeeded/(popSize-j);
+                if (choice <= probability && choice != 0) {
+                    tourney[selParam - prisonersNeeded] = curPopulation[j];
+                    prisonersNeeded--;
+                }
+            }
+            Prisoner victor = tourney[0];
+            ArrayList<Prisoner> ties = new ArrayList<>(1);
+            ties.add(victor);
+            for (int j = 1; j < selParam; j++) {
+                if (tourney[j].getScore() > victor.getScore()) {
+                    victor = tourney[j];
+                    ties = new ArrayList<>(1);
+                    ties.add(victor);
+                } else if (tourney[j].getScore() == victor.getScore()) {
+                    ties.add(tourney[j]);
+                }
+            }
+            if(ties.size() > 1) {
+                int numTies = ties.size();
+                int winningIndex = rand.nextInt(numTies);
+                victor = ties.get(winningIndex);
+            }
+            Selected[i] = new Prisoner(victor.getStrat());
+        }
+        Selected = Variation(Selected);
+        return Selected;
+    }
 
 	/**
 	 * Performs mutation and crossover on a given population of prisoners
